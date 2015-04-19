@@ -18,8 +18,17 @@
                isopen = true;
             }
             socket.onmessage = function(e) {
-		  console.log("Server called me");
+		  console.log("Server called me",e.data);
                if (typeof e.data == "string") {
+                  if (e.data == 'Happy'){
+                     var artist = $("#artist").val();
+                     fetchArtistPlaylist(artist, false, .2);
+                  }
+                  if (e.data == 'Sad'){
+                     var artist = $("#artist").val();
+                     fetchArtistMelPlaylist(artist, false, .2);
+
+                  }
                   console.log("Text message received: " + e.data);
                } else {
                   var arr = new Uint8Array(e.data);
