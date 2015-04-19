@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html>
    <head>
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="common/spotify_en_tools.js"></script>
+    <link type="text/css" href="styles.css" rel="stylesheet" />
+
       <script type="text/javascript">
          var socket = null;
          var isopen = false;
@@ -52,8 +58,159 @@
       </script>
    </head>
    <body>
+      <div id='content' class="container font-light">
+    <h1 id='title'> Weather/Mood Modeling</h1>
+        <div>
+        <button value="go" id="go" name="go"> Upbeat </button>
+        <button value="go" id="go2" name="go2"> Mellow </button>
+        <button value="go" id="go3" name="go3"> Weather </button>
+    </div>
+    <div id="info"> </div>
+    <div id="all_results"> </div>
+    <div id='footer'> 
+        
+    </div>
+ </div>
       <p>Open your browser's JavaScript console to see what's happening (hit F12).</p>
       <button onclick='sendText();'>Send Text Message</button>
       <button onclick='sendBinary();'>Send Binary Message</button>
    </body>
+   <script type="text/javascript">
+
+jQuery.ajaxSettings.traditional = true; 
+var config = getConfig();
+
+function fetchArtistPlaylist(artist,  wandering, variety) {
+    var url = config.echoNestHost + 'api/v4/playlist/static';
+    $("#all_results").empty();
+    info("Creating the playlist ...");
+    
+
+
+    $.getJSON(url, { 'artist': 'all',
+            'api_key': config.apiKey,
+            'sort' : 'energy-desc',
+            'style' : 'rock',
+            'bucket': [ 'id:' + config.spotifySpace, 'tracks'], 'limit' : true,
+            'variety' : 1, 'results': 12, 'type':'artist-radio',  }) 
+        .done(function(data) {
+            info("");
+            if (! ('songs' in data.response)) {
+                info("Can't find that artist");
+            } else {
+                var title = "Artist radio for " + artist;
+                var spotifyPlayButton = getSpotifyPlayButtonForPlaylist(title, data.response.songs);
+
+                $("#all_results").append(spotifyPlayButton);
+            }
+        })
+        .error( function() {
+            info("Whoops, had some trouble getting that playlist");
+        }) ;   
+    
+}
+
+
+function fetchArtistMelPlaylist(artist,  wandering, variety) {
+    var url = config.echoNestHost + 'api/v4/playlist/static';
+    $("#all_results").empty();
+    info("Creating the playlist ...");
+    
+
+
+    $.getJSON(url, { 'artist': 'all',
+            'api_key': config.apiKey,
+            'sort' : 'energy-asc',
+            'style' : 'acoustic',
+            'bucket': [ 'id:' + config.spotifySpace, 'tracks'], 'limit' : true,
+            'variety' : 1, 'results': 12, 'type':'artist-radio',  }) 
+        .done(function(data) {
+            info("");
+            if (! ('songs' in data.response)) {
+                info("Can't find that artist");
+            } else {
+                var title = "Artist radio for " + artist;
+                var spotifyPlayButton = getSpotifyPlayButtonForPlaylist(title, data.response.songs);
+
+                $("#all_results").append(spotifyPlayButton);
+            }
+        })
+        .error( function() {
+            info("Whoops, had some trouble getting that playlist");
+        }) ;   
+    
+}
+
+
+function newArtist() {
+    var artist = $("#artist").val();
+    fetchArtistPlaylist(artist, false, .2);
+}
+
+
+function new2Artist() {
+    var artist = $("#artist").val();
+    fetchArtistMelPlaylist(artist, false, .2);
+}
+
+function new3Artist() {
+    var artist = $("#artist").val();
+    
+
+    var x1 = ''
+    $.getJSON("http://api.openweathermap.org/data/2.5/weather?q=Buffalo,us", function(result){
+            alert(result.weather[0].main);
+            x1 = result.weather[0].main 
+            
+if (x1 == 'Clear'){
+    fetchArtistPlaylist(artist, false, .2);
+} else {
+    fetchArtistMelPlaylist(artist, false, .2);
+}
+        });
+    
+}
+
+function info(txt) {
+    $("#info").text(txt);
+}
+
+function initUI() {
+    $("#artist").on('keydown', function(evt) {
+        if (evt.keyCode == 13) {
+            newArtist();
+        }
+    });
+    
+    $("#go").on("click", function() {
+        newArtist();
+    });
+
+    $("#go2").on("click", function() {
+        new2Artist();
+    });
+
+    $("#go3").on("click", function() {
+        new3Artist();
+    });
+
+
+    $("#go4").on("click", function() {
+        
+        $.ajax({
+          type: "POST",
+          url: "~/pythoncode.py",
+          data: { param: text}
+        }).done(function( o ) {
+           // do something
+        });
+   
+    });
+}
+
+$(document).ready(function() {
+    initUI();
+});
+
+</script>
 </html>
