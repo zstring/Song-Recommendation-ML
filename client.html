@@ -13,7 +13,8 @@
 	 var mood = '';
 	 window.onload = function() {
 	 var artist = $("#artist").val();
-
+            $("#img1").hide();
+            $("#img2").hide();
             socket = new WebSocket("ws://127.0.0.1:9000");
             socket.binaryType = "arraybuffer";
             socket.onopen = function() {
@@ -27,12 +28,15 @@
                      var artist = $("#artist").val();
 		     fetchArtistPlaylist(artist, false, .2);
 		     mood = 'Happy';
+                     $("#img1").show();
+                     $("#img2").hide();
                   }
                   if (e.data == 'Sad' && mood != 'Sad'){
                      var artist = $("#artist").val();
 		     fetchArtistMelPlaylist(artist, false, .2);
 		     mood ='Sad';
-
+                     $("#img2").show();
+                     $("#img1").hide();
                   }
                   console.log("Text message received: " + e.data);
                } else {
@@ -79,15 +83,12 @@
         <button value="go" id="go2" name="go2"> Mellow </button>
         <button value="go" id="go3" name="go3"> Weather </button>
     </div>
-    <div id="info"> </div>
-    <div id="all_results"> </div>
+    <div id="all_results"></div>
     <div id='footer'> 
-        
+        <img src="happy.png" alt="Mountain View" style="width:150px;height:150px" id="img1">
+        <img src="sad.png" alt="Mountain View" style="width:150px;height:150px" id="img2">
     </div>
  </div>
-      <p>Open your browser's JavaScript console to see what's happening (hit F12).</p>
-      <button onclick='sendText();'>Send Text Message</button>
-      <button onclick='sendBinary();'>Send Binary Message</button>
    </body>
    <script type="text/javascript">
 
