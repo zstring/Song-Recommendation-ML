@@ -18,6 +18,7 @@ flag_mood = "sad"
 first_print = 1
 means = 0
 covmats = 0
+server_ = None
 class MuseServer(ServerThread):
     #listen for messages on port 5001
     def __init__(self):
@@ -33,9 +34,9 @@ class MuseServer(ServerThread):
         # print "%s %f %f %f" % (path, alpha_x, alpha_y, alpha_z)
         cur_time = (datetime.datetime.now()).minute
         # print cur_time, start_time, count_alpha, count_beta
-        print count_alpha, count_beta
+        #print count_alpha, count_beta
         if cur_time >= start_time + 2 and first_print == 1: 
-            print "Started Recording the data"
+            #print "Started Recording the data"
             first_print = 0
         if cur_time >= start_time + 2:
             temp_alpha = np.array([alpha_x, alpha_y, alpha_z, alpha_a])
@@ -60,6 +61,7 @@ class MuseServer(ServerThread):
             beta[count_beta, :] = temp_beta
             count_beta = count_beta + 1
         # print "%s %f %f %f %f" % (path, l_ear, l_forehead, r_forehead, r_ear)
+        print count_beta
 
     #handle unexpected messages
     @make_method(None, None)
@@ -94,10 +96,10 @@ def write_data_to_file():
     alpha = np.zeros((max_val, 4))
     start_time = (datetime.datetime.now()).minute + 2
     if flag_mood == "sad":
-        print ("Now Change your mood to happy")
+        #print ("Now Change your mood to happy")
         flag_mood = "happy"
     else:
-        print ("Now Change your mood to happy")
+        #print ("Now Change your mood to happy")
         flag_mood = "sad"
 
 def qdapredict(means,covmats,xtest):
@@ -119,11 +121,12 @@ def qdapredict(means,covmats,xtest):
         
         predict[:, i] = np.divide(1, np.sqrt(2 * np.pi) * det * det) * np.power(np.e, -0.5 * np.sum(np.multiply(np.dot(xtestSubtract, invCov), xtestSubtract), 1))
     finalOutput = np.argmax(predict, 1)
-    print "Tota Happy ", np.sum(finalOutput)
-    print "Total Sad ", finalOutput.shape[0] - np.sum(finalOutput)
+    #print "Tota Happy ", np.sum(finalOutput)
+    #print "Total Sad ", finalOutput.shape[0] - np.sum(finalOutput)
     if np.sum(finalOutput) > finalOutput.shape[0]/2.0:
-        return "happy"
-    return "sad"
+        return "Happy"
+    else :
+        return "Sad"
 
 def class_data():
     global count_beta, count_alpha, file_counter, beta, alpha
@@ -131,16 +134,22 @@ def class_data():
     counts = count_alpha
     
     X = np.hstack((beta[:counts,:], alpha[:counts,:]))
-    print X[:20,:]
+    #print X[:20,:]
     res = qdapredict(means,covmats,X)
     
     count_alpha = 0
     count_beta = 0
     beta = np.zeros((max_val, 4))
     alpha = np.zeros((max_val, 4))
-    print "Mood: ", res
 
-def init_test():
+    if server_ is not None:
+        server_.sendMessage(res.encode('utf8'), False) 
+
+def init_test(x):
+    server = MuseServer()
+    server.start()    
+    global server_
+    server_ = x
     limit = 700
     sad_file = open('beta_sad.pickle', 'rb')
     happy_file = open('beta_happy.pickle', 'rb')
@@ -160,19 +169,22 @@ def init_test():
     means,covmats = qdaLearn(X,y)
     # qdaacc = qdaTest(means,covmats,X,y)
     # print('QDA Accuracy Train Data= '+str(qdaacc))
-
-
-
-try:
-    init_test()
-    server = MuseServer()
-except ServerError, err:
-    print "INSIDE EXCCEPTIPN"
-    print str(err)
-    sys.exit()
-
-server.start()
-
-if __name__ == "__main__":
     while 1:
-        time.sleep(1)
+	time.sleep(1)
+
+    
+    
+'''
+try:
+	init_test(None)
+        
+except ServerError, err:
+        print "INSIDE EXCCEPTIPN"
+        print str(err)
+        sys.exit()
+
+'''
+
+#if __name__ == "__main__":
+#    while 1:
+#        time.sleep(1)

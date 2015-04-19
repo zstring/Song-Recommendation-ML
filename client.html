@@ -9,8 +9,11 @@
 
       <script type="text/javascript">
          var socket = null;
-         var isopen = false;
-         window.onload = function() {
+	 var isopen = false;
+	 var mood = '';
+	 window.onload = function() {
+	 var artist = $("#artist").val();
+
             socket = new WebSocket("ws://127.0.0.1:9000");
             socket.binaryType = "arraybuffer";
             socket.onopen = function() {
@@ -20,13 +23,15 @@
             socket.onmessage = function(e) {
 		  console.log("Server called me",e.data);
                if (typeof e.data == "string") {
-                  if (e.data == 'Happy'){
+                  if (e.data == 'Happy' && mood != 'Happy'){
                      var artist = $("#artist").val();
-                     fetchArtistPlaylist(artist, false, .2);
+		     fetchArtistPlaylist(artist, false, .2);
+		     mood = 'Happy';
                   }
-                  if (e.data == 'Sad'){
+                  if (e.data == 'Sad' && mood != 'Sad'){
                      var artist = $("#artist").val();
-                     fetchArtistMelPlaylist(artist, false, .2);
+		     fetchArtistMelPlaylist(artist, false, .2);
+		     mood ='Sad';
 
                   }
                   console.log("Text message received: " + e.data);
